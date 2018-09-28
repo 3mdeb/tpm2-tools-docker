@@ -49,9 +49,33 @@ ADD "https://github.com/tpm2-software/tpm2-tss/archive/2.0.1.tar.gz" /tmp
 RUN cd /tmp && tar xvf 2.0.1.tar.gz
 WORKDIR /tmp/tpm2-tss-2.0.1
 RUN ./bootstrap
-RUN ./configure
+RUN ./configure --prefix=/usr
 RUN make -j$(nproc)
 RUN make install
 RUN ldconfig
 ENV LD_LIBRARY_PATH /usr/local/lib
 
+RUN apt-get install -y \
+    libdbus-1-dev \
+    libglib2.0-dev
+
+# TPM2-ABRMD
+ADD "https://github.com/tpm2-software/tpm2-abrmd/archive/2.0.2.tar.gz" /tmp
+RUN cd /tmp && tar xvf 2.0.2.tar.gz
+WORKDIR /tmp/tpm2-abrmd-2.0.2
+RUN ./bootstrap
+RUN ./configure --with-dbuspolicydir=/etc/dbus-1/system.d --with-udevrulesdir=/usr/lib/udev/rules.d --with-systemdsystemunitdir=/usr/lib/systemd/system --libdir=/usr/lib64 --prefix=/usr
+RUN make -j$(nproc)
+RUN make install
+
+
+RUN apt-get install -y \
+    libcurl4-gnutls-dev
+# TPM2-TOOLS
+ADD "https://github.com/tpm2-software/tpm2-tools/archive/3.1.2.tar.gz" /tmp
+RUN cd /tmp && tar xvf 3.1.2.tar.gz
+WORKDIR /tmp/tpm2-tools-3.1.2
+RUN ./bootstrap
+RUN ./configure --prefix=/usr
+RUN make -j$(nproc)
+RUN make install
